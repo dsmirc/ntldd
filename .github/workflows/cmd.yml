@@ -1,0 +1,114 @@
+name: C CI
+
+on:
+  push:
+    branches: [ master ]
+  pull_request:
+    branches: [ master ]
+  workflow_dispatch:
+
+jobs:
+  build-i686-windows:
+    runs-on: windows-latest
+    defaults:
+      run:
+        shell: msys2 {0}
+    steps:
+      - name: Install MSYS2
+        uses: msys2/setup-msys2@v2
+        with:
+          msystem: MINGW64
+          update: true
+          install: >-
+            git
+            make
+            cmake
+            rsync
+            mingw-w64-i686-toolchain
+            mingw-w64-i686-SDL2
+            mingw-w64-i686-zlib
+            mingw-w64-i686-gcc
+            mingw-w64-x86_64-gcc
+            mingw-w64-i686-glew
+            mingw-w64-x86_64-cmake
+            mingw-w64-x86_64-make
+            mingw-w64-x86_64-ninja
+            mingw-w64-x86_64-glew
+            mingw-w64-x86_64-python-sphinx
+            mingw-w64-i686-SDL2
+            zstd
+            pkgconf
+            nettle
+            binutils
+            ccache
+            gnutls
+            gcc
+            libgcrypt
+            ninja
+            mingw-w64-i686-SDL
+            mingw-w64-i686-glib2
+            mingw-w64-x86_64-glib2
+            mingw-w64-x86_64-gtk3
+            mingw-w64-x86_64-SDL2
+            mingw-w64-x86_64-SDL
+            glib2
+            mingw-w64-x86_64-glib2
+            tar
+            p7zip
+            patch
+            libssh
+            libtasn1
+            base-devel
+            mingw-w64-x86_64-toolchain
+            cyrus-sasl
+            dtc
+            python3
+            python-setuptools
+            mingw-w64-x86_64-pixman
+            mingw-w64-x86_64-libslirp
+            python-pip
+            mingw-w64-x86_64-binutils
+            mingw-w64-x86_64-capstone
+            mingw-w64-x86_64-ccache
+            mingw-w64-x86_64-curl
+            mingw-w64-x86_64-cyrus-sasl
+            mingw-w64-x86_64-dtc
+            mingw-w64-x86_64-gcc
+            mingw-w64-x86_64-glib2
+            mingw-w64-x86_64-gnutls
+            mingw-w64-x86_64-gtk3
+            mingw-w64-x86_64-libgcrypt
+            mingw-w64-x86_64-libjpeg-turbo
+            mingw-w64-x86_64-libnfs
+            mingw-w64-x86_64-libpng
+            mingw-w64-x86_64-libssh
+            mingw-w64-x86_64-libtasn1
+            mingw-w64-x86_64-libusb
+            mingw-w64-x86_64-lzo2
+            mingw-w64-x86_64-nettle
+            mingw-w64-x86_64-ninja
+            mingw-w64-x86_64-pixman
+            mingw-w64-x86_64-pkgconf
+            mingw-w64-x86_64-python
+            mingw-w64-x86_64-SDL2
+            mingw-w64-x86_64-SDL2_image
+            mingw-w64-x86_64-snappy
+            mingw-w64-cross-binutils
+            mingw-w64-x86_64-spice
+            mingw-w64-x86_64-usbredir
+            mingw-w64-x86_64-zstd
+            python3-pip
+      - name: Checkout repository
+        uses: actions/checkout@v3
+      - name: Build Qemu
+        run: |
+          gcc -fno-common -g -O3 -Wall -D__USE_MINGW_ANSI_STDIO=1 -D_WIN32_WINNT=0x501 -c libntldd.c -o libntldd.o
+          ar rs libntldd.a libntldd.o
+          gcc -fno-common -g -O3 -Wall -D__USE_MINGW_ANSI_STDIO=1 -L. ntldd.c -lntldd -limagehlp -o ntldd.exe
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v3
+        with:
+          name: ntldd
+          path: .
+          retention-days: 0
